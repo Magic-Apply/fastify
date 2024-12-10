@@ -23,8 +23,10 @@ export default fp(async (fastify) => {
 				// Preserve original Host and Origin headers
 				return {
 					...headers,
-					host: originalReq.raw.headers.host,
-					origin: originalReq.raw.headers.origin,
+					host: 'bingbongbitch',
+					origin: 'https://bingbongbitch.org',
+					// host: originalReq.raw.headers.host,
+					// origin: originalReq.raw.headers.origin,
 				};
 			},
 		},
@@ -40,8 +42,10 @@ export default fp(async (fastify) => {
 				// Preserve original Host and Origin headers
 				return {
 					...headers,
-					host: originalReq.raw.headers.host,
-					origin: originalReq.raw.headers.origin,
+					host: 'bingbongbitch',
+					origin: 'https://bingbongbitch.org',
+					// host: originalReq.raw.headers.host,
+					// origin: originalReq.raw.headers.origin,
 				};
 			},
 		},
