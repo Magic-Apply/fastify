@@ -1,7 +1,6 @@
 // plugins/proxy.ts
 import fp from "fastify-plugin";
 import httpProxy from "@fastify/http-proxy";
-
 const isProduction =
 	!process.env.RUN_LOCAL || process.env.RUN_LOCAL === "false";
 const upstreamUrl = isProduction
@@ -31,7 +30,32 @@ export default fp(async (fastify) => {
 			);
 		},
 		preHandler: async (request, reply) => {
+			fastify.log.info(`Request URL: ${request.url}`);
+			if (request.url === '/favicon.ico') {
+				fastify.log.info(`YOOYOYOYOYO`);
+				reply.redirect('/assets/favicon.ico');
+				return;
+			}
 			// Access the Host and Origin headers from the original request
+			fastify.log.info(`Request Original URL: ${request.originalUrl}`);
+			fastify.log.info(`Request URL: ${request.url}`);
+			fastify.log.info(`Request IP: ${request.ip}`);
+			fastify.log.info(`Request From: ${request.headers['from']}`);
+			fastify.log.info(`Request User-Agent: ${request.headers['user-agent']}`);
+			fastify.log.info(`Request Forwarded: ${request.headers['forwarded']}`);
+			fastify.log.info(`Request X-Forwarded-For: ${request.headers['x-forwarded-for']}`);
+			fastify.log.info(`Request X-Forwarded-Host: ${request.headers['x-forwarded-host']}`);
+			fastify.log.info(`Request X-Forwarded-Proto: ${request.headers['x-forwarded-proto']}`);
+			fastify.log.info(`Request X-Forwarded-Port: ${request.headers['x-forwarded-port']}`);
+			fastify.log.info(`Request X-Forwarded-Scheme: ${request.headers['x-forwarded-scheme']}`);
+			fastify.log.info(`Request X-Forwarded-User: ${request.headers['x-forwarded-user']}`);
+			fastify.log.info(`Request X-Forwarded-Method: ${request.headers['x-forwarded-method']}`);
+			fastify.log.info(`Request X-Forwarded-Uri: ${request.headers['x-forwarded-uri']}`);
+			fastify.log.info(`Request X-Forwarded-Ssl: ${request.headers['x-forwarded-ssl']}`);
+			fastify.log.info(`Request X-Forwarded-Server: ${request.headers['x-forwarded-server']}`);
+			fastify.log.info(`Request X-Forwarded-Scheme: ${request.headers['x-forwarded-scheme']}`);
+			fastify.log.info(`Request Connection: ${request.headers['connection']}`);
+			fastify.log.info(`Request Range: ${request.headers['range']}`);
 
 			// Log the Host and Origin headers
 			fastify.log.info(`Request Host: ${request.headers["host"]}`);
@@ -58,13 +82,28 @@ export default fp(async (fastify) => {
 			fastify.log.info(`Request IP: ${request.raw.url}`);
 			fastify.log.info(`Request IP: ${request.raw.method}`);
 		},
-		// replyOptions: {
-		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
-		// 		fastify.log.info('Original Headers:', originalHeaders);
-		// 		fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
-		// 		return originalHeaders
-		// 	},
-		// }
+		replyOptions: {
+			rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
+				fastify.log.info('Original Headers:', originalHeaders);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['from']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['user-agent']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['forwarded']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-for']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-host']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-proto']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-port']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-scheme']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-user']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-method']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-uri']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-ssl']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-server']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['x-forwarded-scheme']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['connection']);
+				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers['range']);
+				return originalHeaders
+			},
+		}
 		// preHandler: async (request, reply) => {
 		// 	// Log the original client request headers
 		// 	fastify.log.info('Original Request Headers:', request.headers);
@@ -130,6 +169,23 @@ export default fp(async (fastify) => {
 		},
 		preHandler: async (request, reply) => {
 			// Access the Host and Origin headers from the original request
+
+			fastify.log.info(`Request From: ${request.headers['from']}`);
+			fastify.log.info(`Request User-Agent: ${request.headers['user-agent']}`);
+			fastify.log.info(`Request Forwarded: ${request.headers['forwarded']}`);
+			fastify.log.info(`Request X-Forwarded-For: ${request.headers['x-forwarded-for']}`);
+			fastify.log.info(`Request X-Forwarded-Host: ${request.headers['x-forwarded-host']}`);
+			fastify.log.info(`Request X-Forwarded-Proto: ${request.headers['x-forwarded-proto']}`);
+			fastify.log.info(`Request X-Forwarded-Port: ${request.headers['x-forwarded-port']}`);
+			fastify.log.info(`Request X-Forwarded-Scheme: ${request.headers['x-forwarded-scheme']}`);
+			fastify.log.info(`Request X-Forwarded-User: ${request.headers['x-forwarded-user']}`);
+			fastify.log.info(`Request X-Forwarded-Method: ${request.headers['x-forwarded-method']}`);
+			fastify.log.info(`Request X-Forwarded-Uri: ${request.headers['x-forwarded-uri']}`);
+			fastify.log.info(`Request X-Forwarded-Ssl: ${request.headers['x-forwarded-ssl']}`);
+			fastify.log.info(`Request X-Forwarded-Server: ${request.headers['x-forwarded-server']}`);
+			fastify.log.info(`Request X-Forwarded-Scheme: ${request.headers['x-forwarded-scheme']}`);
+			fastify.log.info(`Request Connection: ${request.headers['connection']}`);
+			fastify.log.info(`Request Range: ${request.headers['range']}`);
 
 			// Log the Host and Origin headers
 			fastify.log.info(`Request Host: ${request.headers["host"]}`);
