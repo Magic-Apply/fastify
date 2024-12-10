@@ -37,21 +37,21 @@ export default fp(async (fastify) => {
 			fastify.log.info(`Found IP: ${ip}`);
 		},
 		replyOptions: {
-			rewriteRequestHeaders: (request, headers) => {
+			rewriteRequestHeaders: (originalRequest, headers) => {
 				fastify.log.info("REWRITE OPERATIONS");
-				fastify.log.info("Original Headers", { ...headers });
-				const rewriteHeaders: FastifyRequest["headers"] = {
+				fastify.log.info("Original Headers", { ...originalRequest.headers });
+				const newHeaders: FastifyRequest["headers"] = {
 					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					origin: headers.origin,
+					origin: originalRequest.headers.origin,
 				};
 				// If method is DELETE or PATCH, rewrite to POST
-				if (["DELETE", "PATCH", "PUT"].includes(request.method)) {
-					rewriteHeaders["x-http-method-override"] = request.method;
-					rewriteHeaders[":method"] = "POST";
+				if (["DELETE", "PATCH", "PUT"].includes(originalRequest.method)) {
+					newHeaders["x-http-method-override"] = originalRequest.method;
+					newHeaders[":method"] = "POST";
 				}
-				return (request.headers = {
-					...request.headers,
-					...rewriteHeaders,
+				return (originalRequest.headers = {
+					...headers,
+					...newHeaders,
 				});
 			},
 		},
@@ -79,16 +79,16 @@ export default fp(async (fastify) => {
 			fastify.log.info(`Found IP: ${ip}`);
 		},
 		replyOptions: {
-			rewriteRequestHeaders: (request, headers) => {
-				fastify.log.info("REWRITE WEBHOOKS");
-				fastify.log.info("Original Headers:", { ...headers });
-				const rewriteHeaders: FastifyRequest["headers"] = {
+			rewriteRequestHeaders: (originalRequest, headers) => {
+				fastify.log.info("REWRITE OPERATIONS");
+				fastify.log.info("Original Headers", { ...originalRequest.headers });
+				const newHeaders: FastifyRequest["headers"] = {
 					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					origin: headers.origin,
+					origin: originalRequest.headers.origin,
 				};
-				return (request.headers = {
-					...request.headers,
-					...rewriteHeaders,
+				return (originalRequest.headers = {
+					...headers,
+					...newHeaders,
 				});
 			},
 		},
