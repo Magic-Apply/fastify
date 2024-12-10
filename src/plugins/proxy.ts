@@ -41,8 +41,7 @@ export default fp(async (fastify) => {
 				fastify.log.info("REWRITE OPERATIONS");
 				fastify.log.info("Original Headers", { ...headers });
 				const rewriteHeaders: FastifyRequest["headers"] = {
-					// host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					host: "localhost:3000",
+					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
 					origin: headers.origin,
 				};
 				// If method is DELETE or PATCH, rewrite to POST
@@ -84,8 +83,7 @@ export default fp(async (fastify) => {
 				fastify.log.info("REWRITE WEBHOOKS");
 				fastify.log.info("Original Headers:", { ...headers });
 				const rewriteHeaders: FastifyRequest["headers"] = {
-					// host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					host: "localhost:3000",
+					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
 					origin: headers.origin,
 				};
 				return (request.headers = {
