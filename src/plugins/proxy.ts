@@ -10,7 +10,7 @@ export default fp(async (fastify) => {
 	await fastify.register(httpProxy, {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
-		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}`,
+		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`,
 		preHandler: async (request, reply) => {
 			// If method is DELETE or PATCH, rewrite to POST
 			if (request.method === 'DELETE' || request.method === 'PATCH' || request.method === 'PUT') {
@@ -24,6 +24,6 @@ export default fp(async (fastify) => {
 	await fastify.register(httpProxy, {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_WEBHOOKS_PATH}`,
-		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}`,
+		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`,
 	});
 });
