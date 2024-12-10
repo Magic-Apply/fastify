@@ -11,12 +11,21 @@ export default fp(async (fastify) => {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`, // Fix trailing slash, make condidional on empty /
+		preHandler: async (request, reply) => {
+			// Access the Host and Origin headers from the original request
+			const hostHeader = request.headers['host'];
+			const originHeader = request.headers['origin'];
+
+			// Log the Host and Origin headers
+			fastify.log.info(`Request Host: ${hostHeader}`);
+			fastify.log.info(`Request Origin: ${originHeader}`);
+		},
 		replyOptions: {
 			rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
 				fastify.log.info('Original Headers:', originalHeaders);
 				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
 				return originalHeaders
-			}
+			},
 		}
 		// preHandler: async (request, reply) => {
 		// 	// Log the original client request headers
@@ -64,7 +73,16 @@ export default fp(async (fastify) => {
 	await fastify.register(httpProxy, {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_WEBHOOKS_PATH}`,
-		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`,
+		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`, // Fix trailing slash, make condidional on empty /
+		preHandler: async (request, reply) => {
+			// Access the Host and Origin headers from the original request
+			const hostHeader = request.headers['host'];
+			const originHeader = request.headers['origin'];
+
+			// Log the Host and Origin headers
+			fastify.log.info(`Request Host: ${hostHeader}`);
+			fastify.log.info(`Request Origin: ${originHeader}`);
+		},
 		replyOptions: {
 			rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
 				fastify.log.info('Original Headers:', originalHeaders);
