@@ -22,29 +22,37 @@ export default fp(async (fastify) => {
 				reply.redirect("/assets/favicon.ico");
 				return;
 			}
-			fastify.log.info('PREHANDLER OPERATIONS');
+			fastify.log.info("PREHANDLER OPERATIONS");
 			printRequest(request, fastify);
+
+			// IP Whitelisting
+			const ip =
+				request.headers["x-forwarded-for"] ||
+				request.headers["x-real-ip"];
+			if (!ip) {
+				reply.status(403).send({ error: "Forbidden" });
+				return;
+			}
+
+			fastify.log.info(`Found IP: ${ip}`);
 		},
 		replyOptions: {
 			rewriteRequestHeaders: (request, headers) => {
-				fastify.log.info('REWRITE OPERATIONS');
-				fastify.log.info('Original Headers', {...headers});
-				return headers;
-				// const newHeaders = {
-				// 	...headers,
-				// 	host: headers["x-forwarded-host"],
-				// 	origin: headers["x-forwarded-origin"],
-				// };
-				// if (!headers.origin) {
-				// 	newHeaders.host = headers["x-forwarded-host"];
-				// 	newHeaders.origin = headers["x-forwarded-origin"];
-				// }
-				// // If method is DELETE or PATCH, rewrite to POST
-				// if (["DELETE", "PATCH", "PUT"].includes(request.method)) {
-				// 	request.headers["x-http-method-override"] = request.method;
-				// 	request.headers[":method"] = "POST";
-				// }
-				// return headers[":authority"];
+				fastify.log.info("REWRITE OPERATIONS");
+				fastify.log.info("Original Headers", { ...headers });
+				const rewriteHeaders: FastifyRequest["headers"] = {
+					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
+					origin: headers.origin,
+				};
+				// If method is DELETE or PATCH, rewrite to POST
+				if (["DELETE", "PATCH", "PUT"].includes(request.method)) {
+					rewriteHeaders["x-http-method-override"] = request.method;
+					rewriteHeaders[":method"] = "POST";
+				}
+				return (request.headers = {
+					...request.headers,
+					...rewriteHeaders,
+				});
 			},
 		},
 	});
@@ -57,16 +65,33 @@ export default fp(async (fastify) => {
 		logLevel: "trace",
 		preHandler: async (request, reply) => {
 			// Access the Host and Origin headers from the original request
-			fastify.log.info('PREHANDLER WEBHOOKS');
+			fastify.log.info("PREHANDLER WEBHOOKS");
 			printRequest(request, fastify);
+			// IP Whitelisting
+			const ip =
+				request.headers["x-forwarded-for"] ||
+				request.headers["x-real-ip"];
+			if (!ip) {
+				reply.status(403).send({ error: "Forbidden" });
+				return;
+			}
+
+			fastify.log.info(`Found IP: ${ip}`);
 		},
 		replyOptions: {
 			rewriteRequestHeaders: (request, headers) => {
-				fastify.log.info('REWRITE WEBHOOKS');
-				fastify.log.info('Original Headers:', {...headers});
-				return headers
-			}
-		}
+				fastify.log.info("REWRITE WEBHOOKS");
+				fastify.log.info("Original Headers:", { ...headers });
+				const rewriteHeaders: FastifyRequest["headers"] = {
+					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
+					origin: headers.origin,
+				};
+				return (request.headers = {
+					...request.headers,
+					...rewriteHeaders,
+				});
+			},
+		},
 	});
 });
 
