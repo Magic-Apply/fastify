@@ -20,7 +20,7 @@ fastify.register(AutoLoad, {
   options: pluginOptions
 });
 
-fastify.listen({ host: '::', port: Number(process.env.PORT) || 3000 }, function (err, address) {
+fastify.listen({ host: '::', port: Number(process.env.PORT) || Number(process.env.PORT_LOCAL) || 3000 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)
