@@ -49,6 +49,14 @@ export default fp(async (fastify) => {
 			fastify.log.info("Request Raw Headers:", request.raw.rawHeaders);
 			fastify.log.info("Request Headers:", request.raw.headers);
 			fastify.log.info("Request Fixed Headers:", request.headers);
+
+			//IP Address
+			fastify.log.info(`Request IP: ${request.ip}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remoteAddress}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remotePort}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remoteFamily}`);
+			fastify.log.info(`Request IP: ${request.raw.url}`);
+			fastify.log.info(`Request IP: ${request.raw.method}`);
 		},
 		// replyOptions: {
 		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
@@ -139,6 +147,14 @@ export default fp(async (fastify) => {
 			fastify.log.info("Request Raw Headers:", request.raw.rawHeaders);
 			fastify.log.info("Request Headers:", request.raw.headers);
 			fastify.log.info("Request Fixed Headers:", request.headers);
+
+			//IP Address
+			fastify.log.info(`Request IP: ${request.ip}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remoteAddress}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remotePort}`);
+			fastify.log.info(`Request IP: ${request.raw.socket.remoteFamily}`);
+			fastify.log.info(`Request IP: ${request.raw.url}`);
+			fastify.log.info(`Request IP: ${request.raw.method}`);
 		},
 		// replyOptions: {
 		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
