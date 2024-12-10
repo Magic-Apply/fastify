@@ -23,8 +23,8 @@ export default fp(async (fastify) => {
 				// Preserve original Host and Origin headers
 				return {
 					...headers,
-					host: originalReq.raw.headers.host,
-					origin: originalReq.raw.headers.origin,
+					host: originalReq.host,
+					origin: originalReq.url,
 				};
 			},
 		},
@@ -40,8 +40,8 @@ export default fp(async (fastify) => {
 				// Preserve original Host and Origin headers
 				return {
 					...headers,
-					host: originalReq.raw.headers.host,
-					origin: originalReq.raw.headers.origin,
+					host: originalReq.host,
+					origin: originalReq.url,
 				};
 			},
 		},
