@@ -54,6 +54,15 @@ export default fp(async (fastify) => {
 					...newHeaders,
 				});
 			},
+			rewriteHeaders: (headers, response) => {
+				return {
+					...headers,
+					"access-control-allow-origin": headers["access-control-allow-origin"] ?? undefined,
+					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
+					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
+					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
+				};
+			},
 		},
 	});
 
@@ -91,10 +100,18 @@ export default fp(async (fastify) => {
 					...newHeaders,
 				});
 			},
+			rewriteHeaders: (headers, response) => {
+				return {
+					...headers,
+					"access-control-allow-origin": headers["access-control-allow-origin"] ?? undefined,
+					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
+					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
+					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
+				};
+			},
 		},
 	});
 });
-
 function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 	// Access the Host and Origin headers from the original request
 	fastify.log.info(`Request URL: ${request.url}`);
@@ -149,3 +166,4 @@ function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 	fastify.log.info(`Request Connection: ${request.headers["connection"]}`);
 	fastify.log.info(`Request Range: ${request.headers["range"]}`);
 }
+
