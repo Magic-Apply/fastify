@@ -58,39 +58,39 @@ export default fp(async (fastify) => {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_WEBHOOKS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`,
-		preHandler: async (request, reply) => {
-			// Log the original client request headers
-			fastify.log.info('Original Request Headers:', request.headers);
+		// preHandler: async (request, reply) => {
+		// 	// Log the original client request headers
+		// 	fastify.log.info('Original Request Headers:', request.headers);
 
-			// Store original Host and Origin headers for later use
-			request.headers['x-original-host'] = request.headers.host;
-			request.headers['x-original-origin'] = request.headers.origin;
-		},
-		replyOptions: {
-			rewriteRequestHeaders: (originalReq, headers) => {
-				// Log the headers before rewriting
-				fastify.log.info('Headers before rewrite:', headers);
+		// 	// Store original Host and Origin headers for later use
+		// 	request.headers['x-original-host'] = request.headers.host;
+		// 	request.headers['x-original-origin'] = request.headers.origin;
+		// },
+		// replyOptions: {
+		// 	rewriteRequestHeaders: (originalReq, headers) => {
+		// 		// Log the headers before rewriting
+		// 		fastify.log.info('Headers before rewrite:', headers);
 
-				// Retrieve original headers stored in preHandler
-				const originalHost = headers['x-original-host'] as string || headers.host;
-				const originalOrigin = headers['x-original-origin'] as string || headers.origin;
+		// 		// Retrieve original headers stored in preHandler
+		// 		const originalHost = headers['x-original-host'] as string || headers.host;
+		// 		const originalOrigin = headers['x-original-origin'] as string || headers.origin;
 
-				// Remove custom headers to prevent them from being sent upstream
-				delete headers['x-original-host'];
-				delete headers['x-original-origin'];
+		// 		// Remove custom headers to prevent them from being sent upstream
+		// 		delete headers['x-original-host'];
+		// 		delete headers['x-original-origin'];
 
-				// Preserve original Host and Origin headers
-				const newHeaders = {
-					...headers,
-					host: originalHost,
-					origin: originalOrigin,
-				};
+		// 		// Preserve original Host and Origin headers
+		// 		const newHeaders = {
+		// 			...headers,
+		// 			host: originalHost,
+		// 			origin: originalOrigin,
+		// 		};
 
-				// Log the headers after rewriting
-				fastify.log.info('Headers after rewrite:', newHeaders);
+		// 		// Log the headers after rewriting
+		// 		fastify.log.info('Headers after rewrite:', newHeaders);
 
-				return newHeaders;
-			},
-		},
+		// 		return newHeaders;
+		// 	},
+		// },
 	});
 });
