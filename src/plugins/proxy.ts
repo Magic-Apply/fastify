@@ -2,8 +2,11 @@
 import fp from "fastify-plugin";
 import httpProxy from "@fastify/http-proxy";
 
-const isProduction = !process.env.RUN_LOCAL || process.env.RUN_LOCAL === 'false';
-const upstreamUrl = isProduction ? `${process.env.INTERNAL_API_BASE_URL}` : `${process.env.INTERNAL_API_BASE_URL_LOCAL}`;
+const isProduction =
+	!process.env.RUN_LOCAL || process.env.RUN_LOCAL === "false";
+const upstreamUrl = isProduction
+	? `${process.env.INTERNAL_API_BASE_URL}`
+	: `${process.env.INTERNAL_API_BASE_URL_LOCAL}`;
 
 export default fp(async (fastify) => {
 	// Proxy for operations with error handling
@@ -11,18 +14,41 @@ export default fp(async (fastify) => {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`, // Fix trailing slash, make condidional on empty /
+		logLevel: "trace",
+		beforeHandler: async (request, reply) => {
+			fastify.log.info("Before Handler");
+			fastify.log.info(
+				"Request Raw Headers:",
+				Object.values(request.raw.rawHeaders)
+			);
+			fastify.log.info(
+				"Request Headers:",
+				Object.values(request.raw.headers)
+			);
+			fastify.log.info(
+				"Request Fixed Headers:",
+				Object.values(request.headers)
+			);
+		},
 		preHandler: async (request, reply) => {
 			// Access the Host and Origin headers from the original request
-			const hostHeader = request.headers['host'];
-			const originHeader = request.headers['origin'];
 
 			// Log the Host and Origin headers
-			fastify.log.info(`Request Host: ${hostHeader}`);
-			fastify.log.info(`Request Origin: ${originHeader}`);
-			fastify.log.info(`Request Referer: ${request.headers['referer']}`);
-			fastify.log.info('Request Raw Headers:', request.raw.rawHeaders);
-			fastify.log.info('Request Headers:', request.raw.headers);
-			fastify.log.info('Request Fixed Headers:', request.headers);
+			fastify.log.info(`Request Host: ${request.headers["host"]}`);
+			fastify.log.info(`Request Origin: ${request.headers["origin"]}`);
+			fastify.log.info(`Request Referer: ${request.headers["referer"]}`);
+			fastify.log.info(
+				`Request Raw Host: ${request.raw.headers["host"]}`
+			);
+			fastify.log.info(
+				`Request Raw Origin: ${request.raw.headers["origin"]}`
+			);
+			fastify.log.info(
+				`Request Raw Referer: ${request.raw.headers["referer"]}`
+			);
+			fastify.log.info("Request Raw Headers:", request.raw.rawHeaders);
+			fastify.log.info("Request Headers:", request.raw.headers);
+			fastify.log.info("Request Fixed Headers:", request.headers);
 		},
 		// replyOptions: {
 		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
@@ -78,18 +104,41 @@ export default fp(async (fastify) => {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_WEBHOOKS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`, // Fix trailing slash, make condidional on empty /
+		logLevel: "trace",
+		beforeHandler: async (request, reply) => {
+			fastify.log.info("Before Handler");
+			fastify.log.info(
+				"Request Raw Headers:",
+				Object.values(request.raw.rawHeaders)
+			);
+			fastify.log.info(
+				"Request Headers:",
+				Object.values(request.raw.headers)
+			);
+			fastify.log.info(
+				"Request Fixed Headers:",
+				Object.values(request.headers)
+			);
+		},
 		preHandler: async (request, reply) => {
 			// Access the Host and Origin headers from the original request
-			const hostHeader = request.headers['host'];
-			const originHeader = request.headers['origin'];
 
 			// Log the Host and Origin headers
-			fastify.log.info(`Request Host: ${hostHeader}`);
-			fastify.log.info(`Request Origin: ${originHeader}`);
-			fastify.log.info(`Request Referer: ${request.headers['referer']}`);
-			fastify.log.info('Request Raw Headers:', request.raw.rawHeaders);
-			fastify.log.info('Request Headers:', request.raw.headers);
-			fastify.log.info('Request Headers:', request.headers);
+			fastify.log.info(`Request Host: ${request.headers["host"]}`);
+			fastify.log.info(`Request Origin: ${request.headers["origin"]}`);
+			fastify.log.info(`Request Referer: ${request.headers["referer"]}`);
+			fastify.log.info(
+				`Request Raw Host: ${request.raw.headers["host"]}`
+			);
+			fastify.log.info(
+				`Request Raw Origin: ${request.raw.headers["origin"]}`
+			);
+			fastify.log.info(
+				`Request Raw Referer: ${request.raw.headers["referer"]}`
+			);
+			fastify.log.info("Request Raw Headers:", request.raw.rawHeaders);
+			fastify.log.info("Request Headers:", request.raw.headers);
+			fastify.log.info("Request Fixed Headers:", request.headers);
 		},
 		// replyOptions: {
 		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
