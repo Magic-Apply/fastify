@@ -19,14 +19,18 @@ export default fp(async (fastify) => {
 			// Log the Host and Origin headers
 			fastify.log.info(`Request Host: ${hostHeader}`);
 			fastify.log.info(`Request Origin: ${originHeader}`);
+			fastify.log.info(`Request Referer: ${request.headers['referer']}`);
+			fastify.log.info('Request Raw Headers:', request.raw.rawHeaders);
+			fastify.log.info('Request Headers:', request.raw.headers);
+			fastify.log.info('Request Fixed Headers:', request.headers);
 		},
-		replyOptions: {
-			rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
-				fastify.log.info('Original Headers:', originalHeaders);
-				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
-				return originalHeaders
-			},
-		}
+		// replyOptions: {
+		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
+		// 		fastify.log.info('Original Headers:', originalHeaders);
+		// 		fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
+		// 		return originalHeaders
+		// 	},
+		// }
 		// preHandler: async (request, reply) => {
 		// 	// Log the original client request headers
 		// 	fastify.log.info('Original Request Headers:', request.headers);
@@ -82,14 +86,18 @@ export default fp(async (fastify) => {
 			// Log the Host and Origin headers
 			fastify.log.info(`Request Host: ${hostHeader}`);
 			fastify.log.info(`Request Origin: ${originHeader}`);
+			fastify.log.info(`Request Referer: ${request.headers['referer']}`);
+			fastify.log.info('Request Raw Headers:', request.raw.rawHeaders);
+			fastify.log.info('Request Headers:', request.raw.headers);
+			fastify.log.info('Request Headers:', request.headers);
 		},
-		replyOptions: {
-			rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
-				fastify.log.info('Original Headers:', originalHeaders);
-				fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
-				return originalHeaders
-			}
-		}
+		// replyOptions: {
+		// 	rewriteRequestHeaders: (fastifyRequest, originalHeaders) => {
+		// 		fastify.log.info('Original Headers:', originalHeaders);
+		// 		fastify.log.info('Fastify Request Headers:', fastifyRequest.headers);
+		// 		return originalHeaders
+		// 	}
+		// }
 		// preHandler: async (request, reply) => {
 		// 	// Log the original client request headers
 		// 	fastify.log.info('Original Request Headers:', request.headers);
