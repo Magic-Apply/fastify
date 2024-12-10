@@ -57,7 +57,8 @@ export default fp(async (fastify) => {
 			rewriteHeaders: (headers, response) => {
 				return {
 					...headers,
-					"access-control-allow-origin": headers["access-control-allow-origin"] ?? undefined,
+					"allow": headers["allow"] ?? undefined,
+					"access-control-allow-origin": headers["access-control-allow-origin"] ?? "boooooo",
 					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
 					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
 					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
@@ -103,7 +104,7 @@ export default fp(async (fastify) => {
 			rewriteHeaders: (headers, response) => {
 				return {
 					...headers,
-					"access-control-allow-origin": headers["access-control-allow-origin"] ?? undefined,
+					"access-control-allow-origin": headers["access-control-allow-origin"] ?? "boooooo",
 					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
 					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
 					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
