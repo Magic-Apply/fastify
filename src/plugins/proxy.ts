@@ -10,13 +10,23 @@ export default fp(async (fastify) => {
 	await fastify.register(httpProxy, {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
-		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`,
+		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`, // Fix trailing slash, make condidional on empty /
 		preHandler: async (request, reply) => {
 			// If method is DELETE or PATCH, rewrite to POST
-			if (request.method === 'DELETE' || request.method === 'PATCH' || request.method === 'PUT') {
+			if (['DELETE', 'PATCH', 'PUT'].includes(request.method)) {
 				request.headers['x-http-method-override'] = request.method;
 				request.raw.method = 'POST';
 			}
+		},
+		replyOptions: {
+			rewriteRequestHeaders: (originalReq, headers) => {
+				// Preserve original Host and Origin headers
+				return {
+					...headers,
+					host: originalReq.headers.host,
+					origin: originalReq.headers.origin,
+				};
+			},
 		},
 	});
 
@@ -25,5 +35,15 @@ export default fp(async (fastify) => {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_WEBHOOKS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_WEBHOOKS_PATH}/`,
+		replyOptions: {
+			rewriteRequestHeaders: (originalReq, headers) => {
+				// Preserve original Host and Origin headers
+				return {
+					...headers,
+					host: originalReq.headers.host,
+					origin: originalReq.headers.origin,
+				};
+			},
+		},
 	});
 });
