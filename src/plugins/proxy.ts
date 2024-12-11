@@ -4,7 +4,6 @@ import httpProxy from "@fastify/http-proxy";
 import { FastifyRequest, FastifyInstance } from "fastify";
 import fastifyIp from "fastify-ip";
 
-
 const isProduction =
 	!process.env.RUN_LOCAL || process.env.RUN_LOCAL === "false";
 
@@ -16,13 +15,17 @@ const internalAPIHost = isProduction
 	? String(process.env.INTERNAL_API_HOST)
 	: String(process.env.INTERNAL_API_HOST_LOCAL);
 
+const primaryClientDomain = isProduction
+	? String(process.env.PRIMARY_CLIENT_DOMAIN)
+	: String(process.env.PRIMARY_CLIENT_DOMAIN_LOCAL);
+
 const logLevel = isProduction ? "info" : "trace";
 
 export default fp(async (fastify) => {
 	await fastify.register(fastifyIp, {
-		order: ['x-forwarded-for', 'x-real-ip'],
+		order: ["x-forwarded-for", "x-real-ip"],
 		strict: false,
-		isAWS: false
+		isAWS: false,
 	});
 	// Proxy for operations with error handling
 	await fastify.register(httpProxy, {
@@ -30,47 +33,55 @@ export default fp(async (fastify) => {
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`, // Fix trailing slash, make condidional on empty /
 		logLevel: logLevel,
-		preHandler: async (request, reply) => {
-			fastify.log.info("PREHANDLER OPERATIONS REQUEST");
+		httpMethods: ["GET", "POST", "OPTIONS", "PATCH", "PUT", "DELETE"],
+		preValidation: async (request, reply) => {
+			fastify.log.info("PREVALIDATION OPERATIONS REQUEST");
+
+			// TODO: Add IP Whitelisting
+			// if (!ip) {
+				// 	reply.status(403).send({ error: "Forbidden" });
+				// 	return;
+				// }
+				
+			// Redirect to favicon
 			if (request.url === "/favicon.ico") {
 				fastify.log.info("REDIRECTING TO FAVICON");
 				reply.redirect("/assets/favicon.ico");
 				return;
 			}
-			printRequest(request, fastify);
-			// IP Whitelisting
-			// if (!ip) {
-			// 	reply.status(403).send({ error: "Forbidden" });
-			// 	return;
-			// }
+			
 
+		},
+		preHandler: async (request, reply) => {
+			fastify.log.info("PREHANDLER OPERATIONS REQUEST");
+			printRequest(request, fastify);
+				
+			// If method is DELETE, PATCH, or PUT, rewrite to POST
+			const method = request.method;
+			if (["DELETE", "PATCH", "PUT"].includes(method)) {
+				request.headers['x-http-method-override'] = request.method;
+				request.raw.method = 'POST';
+			}
 		},
 		replyOptions: {
 			rewriteRequestHeaders: (request, originalHeaders) => {
 				fastify.log.info("REWRITE OPERATIONS REQUEST");
-				fastify.log.info('Request IP', request.ip);
-				fastify.log.info('Request IPs', request.ips);
 
-				// If method is DELETE or PATCH, rewrite to POST
-				const method = originalHeaders[":method"] as string;
-				if (["DELETE", "PATCH", "PUT"].includes(method)) {
-					originalHeaders["x-http-method-override"] = method;
-					originalHeaders[":method"] = "POST";
-				}
-
-				// Return modified headers
+				// Modify request headers (before sending to internal api)
 				return {
 					...originalHeaders,
-					host: internalAPIHost,
+					host: internalAPIHost, // Ensure the host is fixed to the internal api gateway
 				};
 			},
 			rewriteHeaders: (headers, response) => {
-				
-				// Currently does nothing
-				// fastify.log.info("REWRITE OPERATIONS RESPONSE");
+				fastify.log.info("REWRITE OPERATIONS RESPONSE");
+
+				// Modify response headers (before sending to client)
 				return {
 					...headers,
-					// 'access-control-allow-origin': 'http://127.0.0.1:4000', // If you want to play with CORS, this is the header to change
+					"access-control-allow-origin":
+						headers["access-control-allow-origin"] ??
+						primaryClientDomain, // If no access-control-allow-origin, use the primary client domain to ensure CORS is active by default
 				};
 			},
 		},
@@ -106,7 +117,9 @@ export default fp(async (fastify) => {
 				// fastify.log.info("REWRITE WEBHOOKS RESPONSE");
 				return {
 					...headers,
-					// 'access-control-allow-origin': 'http://127.0.0.1:4000', // If you want to play with CORS, this is the header to change
+					"access-control-allow-origin":
+						headers["access-control-allow-origin"] ??
+						primaryClientDomain, // If no access-control-allow-origin, use the primary client domain to ensure CORS is active by default
 				};
 			},
 		},
@@ -140,8 +153,8 @@ function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 			xForwardedSsl: request.headers["x-forwarded-ssl"],
 			xForwardedServer: request.headers["x-forwarded-server"],
 			connection: request.headers["connection"],
-			range: request.headers["range"]
-		}
+			range: request.headers["range"],
+		},
 	};
 
 	fastify.log.info(logData);
