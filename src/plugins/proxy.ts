@@ -113,6 +113,7 @@ export default fp(async (fastify) => {
 		},
 	});
 });
+
 function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 	// Access the Host and Origin headers from the original request
 	fastify.log.info(`Request URL: ${request.url}`);
@@ -167,4 +168,3 @@ function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 	fastify.log.info(`Request Connection: ${request.headers["connection"]}`);
 	fastify.log.info(`Request Range: ${request.headers["range"]}`);
 }
-
