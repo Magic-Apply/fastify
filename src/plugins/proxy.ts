@@ -2,66 +2,71 @@
 import fp from "fastify-plugin";
 import httpProxy from "@fastify/http-proxy";
 import { FastifyRequest, FastifyInstance } from "fastify";
+import fastifyIp from "fastify-ip";
 const isProduction =
 	!process.env.RUN_LOCAL || process.env.RUN_LOCAL === "false";
 const upstreamUrl = isProduction
-	? `${process.env.INTERNAL_API_BASE_URL}`
-	: `${process.env.INTERNAL_API_BASE_URL_LOCAL}`;
+	? String(process.env.INTERNAL_API_BASE_URL)
+	: String(process.env.INTERNAL_API_BASE_URL_LOCAL);
+
+const internalAPIHost = isProduction
+	? String(process.env.INTERNAL_API_HOST)
+	: String(process.env.INTERNAL_API_HOST_LOCAL);
 
 export default fp(async (fastify) => {
+	await fastify.register(fastifyIp, {
+		order: ['x-forwarded-for', 'x-real-ip'],
+		strict: false,
+		isAWS: false
+	});
 	// Proxy for operations with error handling
 	await fastify.register(httpProxy, {
 		upstream: upstreamUrl,
 		prefix: `/${process.env.PUBLIC_API_OPERATIONS_PATH}`,
 		rewritePrefix: `/${process.env.INTERNAL_API_OPERATIONS_PATH}/`, // Fix trailing slash, make condidional on empty /
 		logLevel: "trace",
+		disableCache: true,
 		preHandler: async (request, reply) => {
-			fastify.log.info(`Request URL: ${request.url}`);
+			fastify.log.info("PREHANDLER OPERATIONS REQUEST");
 			if (request.url === "/favicon.ico") {
-				fastify.log.info(`YOOYOYOYOYO`);
+				fastify.log.info("REDIRECTING TO FAVICON");
 				reply.redirect("/assets/favicon.ico");
 				return;
 			}
-			fastify.log.info("PREHANDLER OPERATIONS");
 			printRequest(request, fastify);
-
 			// IP Whitelisting
-			const ip =
-				request.headers["x-forwarded-for"] ||
-				request.headers["x-real-ip"];
-			if (!ip) {
-				reply.status(403).send({ error: "Forbidden" });
-				return;
-			}
+			// if (!ip) {
+			// 	reply.status(403).send({ error: "Forbidden" });
+			// 	return;
+			// }
 
-			fastify.log.info(`Found IP: ${ip}`);
 		},
 		replyOptions: {
-			rewriteRequestHeaders: (originalRequest, headers) => {
-				fastify.log.info("REWRITE OPERATIONS");
-				fastify.log.info("Original Headers", { ...originalRequest.headers });
-				const newHeaders: FastifyRequest["headers"] = {
-					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					origin: originalRequest.headers.origin,
-				};
+			rewriteRequestHeaders: (request, originalHeaders) => {
+				fastify.log.info("REWRITE OPERATIONS REQUEST");
+				fastify.log.info('Request IP', request.ip);
+				fastify.log.info('Request IPs', request.ips);
+
 				// If method is DELETE or PATCH, rewrite to POST
-				if (["DELETE", "PATCH", "PUT"].includes(originalRequest.method)) {
-					newHeaders["x-http-method-override"] = originalRequest.method;
-					newHeaders[":method"] = "POST";
+				const method = originalHeaders[":method"] as string;
+				if (["DELETE", "PATCH", "PUT"].includes(method)) {
+					originalHeaders["x-http-method-override"] = method;
+					originalHeaders[":method"] = "POST";
 				}
-				return (originalRequest.headers = {
-					...headers,
-					...newHeaders,
-				});
+
+				// Return modified headers
+				return {
+					...originalHeaders,
+					host: internalAPIHost,
+				};
 			},
 			rewriteHeaders: (headers, response) => {
+				
+				// Currently does nothing
+				// fastify.log.info("REWRITE OPERATIONS RESPONSE");
 				return {
 					...headers,
-					"allow": headers["allow"] ?? undefined,
-					"access-control-allow-origin": headers["access-control-allow-origin"] ?? "boooooo",
-					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
-					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
-					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
+					// 'access-control-allow-origin': 'http://127.0.0.1:4000', // If you want to play with CORS, this is the header to change
 				};
 			},
 		},
@@ -75,39 +80,29 @@ export default fp(async (fastify) => {
 		logLevel: "trace",
 		preHandler: async (request, reply) => {
 			// Access the Host and Origin headers from the original request
-			fastify.log.info("PREHANDLER WEBHOOKS");
+			fastify.log.info("PREHANDLER WEBHOOKS REQUEST");
 			printRequest(request, fastify);
 			// IP Whitelisting
-			const ip =
-				request.headers["x-forwarded-for"] ||
-				request.headers["x-real-ip"];
-			if (!ip) {
-				reply.status(403).send({ error: "Forbidden" });
-				return;
-			}
-
-			fastify.log.info(`Found IP: ${ip}`);
+			// if (!ip) {
+			// 	reply.status(403).send({ error: "Forbidden" });
+			// 	return;
+			// }
 		},
 		replyOptions: {
-			rewriteRequestHeaders: (originalRequest, headers) => {
-				fastify.log.info("REWRITE OPERATIONS");
-				fastify.log.info("Original Headers", { ...originalRequest.headers });
-				const newHeaders: FastifyRequest["headers"] = {
-					host: String(process.env.INTERNAL_API_HOST), // Ensure the host is fixed to the internal api gateway
-					origin: originalRequest.headers.origin,
+			rewriteRequestHeaders: (request, originalHeaders) => {
+				fastify.log.info("REWRITE WEBHOOKS REQUEST");
+				// Return modified headers
+				return {
+					...originalHeaders,
+					host: internalAPIHost, // Ensure the host is fixed to the internal api gateway
 				};
-				return (originalRequest.headers = {
-					...headers,
-					...newHeaders,
-				});
 			},
 			rewriteHeaders: (headers, response) => {
+				// Currently does nothing
+				// fastify.log.info("REWRITE WEBHOOKS RESPONSE");
 				return {
 					...headers,
-					"access-control-allow-origin": headers["access-control-allow-origin"] ?? "boooooo",
-					"access-control-allow-credentials": headers["access-control-allow-credentials"] ?? undefined,
-					"access-control-allow-methods": headers["access-control-allow-methods"] ?? undefined,
-					"access-control-allow-headers": headers["access-control-allow-headers"] ?? undefined,
+					// 'access-control-allow-origin': 'http://127.0.0.1:4000', // If you want to play with CORS, this is the header to change
 				};
 			},
 		},
