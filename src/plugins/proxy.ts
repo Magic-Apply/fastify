@@ -42,7 +42,7 @@ export default fp(async (fastify) => {
 				// 	reply.status(403).send({ error: "Forbidden" });
 				// 	return;
 				// }
-				
+
 			// Redirect to favicon
 			if (request.url === "/favicon.ico") {
 				fastify.log.info("REDIRECTING TO FAVICON");
@@ -75,15 +75,35 @@ export default fp(async (fastify) => {
 			},
 			rewriteHeaders: (headers, response) => {
 				fastify.log.info("REWRITE OPERATIONS RESPONSE");
-
 				// Modify response headers (before sending to client)
 				return {
 					...headers,
+					timestamp: new Date().toISOString(),
 					"access-control-allow-origin":
 						headers["access-control-allow-origin"] ??
 						primaryClientDomain, // If no access-control-allow-origin, use the primary client domain to ensure CORS is active by default
 				};
 			},
+			// onResponse: async (request, reply, res) => {
+			// 	fastify.log.info("ON RESPONSE OPERATIONS REQUEST");
+				
+			// 	// Access the upstream response status code
+			// 	const upstreamStatusCode = res.statusCode;
+			// 	fastify.log.info(`Upstream Status Code: ${upstreamStatusCode}`);
+				
+			// 	if (upstreamStatusCode === 304) {
+			// 		fastify.log.info("STATUS CODE IS 304");
+					
+			// 		// Send an empty response (no body for 304)
+			// 		reply.statusCode = 509;
+			// 		reply.send(null);
+			// 	} else {
+			// 		fastify.log.info("STATUS CODE IS NOT 304");
+			// 		// Forward the response as is
+			// 		// res.statusCode = 500;
+			// 		reply.send({"yo": "yo"});
+			// 	}
+			// },
 		},
 	});
 
@@ -132,6 +152,7 @@ function printRequest(request: FastifyRequest, fastify: FastifyInstance) {
 		requestUrl: request.url,
 		requestIp: request.ip,
 		requestIps: request.ips,
+		ifNoneMatch: request.headers["if-none-match"],
 		requestHeaders: {
 			authority: request.headers["authority"],
 			host: request.headers["host"],
